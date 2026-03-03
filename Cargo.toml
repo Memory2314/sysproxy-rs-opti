@@ -26,7 +26,7 @@ napi = { version = "2", default-features = false, features = ["napi4"], optional
 napi-derive = { version = "2", optional = true }
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
-url = "2.5"
+url = "2.4"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 xdg = "3.0"
@@ -36,7 +36,7 @@ system-configuration = "0.7"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winreg = { version = "0.55", features = ["transactions"] }
-windows = { version = "0.62", features = [
+windows = { version = "0.58", features = [
     "Win32_Networking_WinInet",
     "Win32_NetworkManagement_Rras",
     "Win32_Foundation",
