@@ -22,8 +22,8 @@ tokio = { version = "1", features = [
     "macros",
     "time",
 ], optional = true }
-napi = { version = "3", default-features = false, features = ["napi4"], optional = true }
-napi-derive = { version = "3", optional = true }
+napi = { version = "2", default-features = false, features = ["napi4"], optional = true }
+napi-derive = { version = "2", optional = true }
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
 url = "2.5"
