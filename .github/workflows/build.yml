@@ -24,7 +24,7 @@ jobs:
             target: x86_64-pc-windows-msvc
             artifact: sysproxy.win32-x64-msvc-win7.node
             features: ""
-            toolchain: 1.70.0
+            toolchain: 1.71.0
           - os: windows-latest
             target: aarch64-pc-windows-msvc
             artifact: sysproxy.win32-arm64-msvc.node
@@ -39,7 +39,7 @@ jobs:
             target: i686-pc-windows-msvc
             artifact: sysproxy.win32-ia32-msvc-win7.node
             features: ""
-            toolchain: 1.70.0
+            toolchain: 1.71.0
           # macOS
           - os: macos-latest
             target: x86_64-apple-darwin
@@ -73,7 +73,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build
         run: |
@@ -157,7 +157,7 @@ jobs:
           apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build
         run: pnpm build --target ${{ matrix.target }}
@@ -216,7 +216,7 @@ jobs:
         run: cargo install cargo-zigbuild
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build
         run: pnpm build --target ${{ matrix.target }} -x

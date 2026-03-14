@@ -153,32 +153,32 @@ impl GuardMonitor {
 
     #[inline]
     fn guard_sysproxy_static(sysproxy: &Sysproxy) {
-        if let Ok(actually_sysproxy) = Sysproxy::get_system_proxy()
-            && &actually_sysproxy != sysproxy
-        {
-            debug!(
-                "Sysproxy settings do not match! Expected: {:?}, Actual: {:?}",
-                sysproxy, actually_sysproxy
-            );
-            debug!("Resetting Sysproxy to: {:?}", sysproxy);
-            if let Err(e) = sysproxy.set_system_proxy() {
-                error!("Failed to set system proxy: {:?}", e);
+        if let Ok(actually_sysproxy) = Sysproxy::get_system_proxy() {
+            if &actually_sysproxy != sysproxy {
+                debug!(
+                    "Sysproxy settings do not match! Expected: {:?}, Actual: {:?}",
+                    sysproxy, actually_sysproxy
+                );
+                debug!("Resetting Sysproxy to: {:?}", sysproxy);
+                if let Err(e) = sysproxy.set_system_proxy() {
+                    error!("Failed to set system proxy: {:?}", e);
+                }
             }
         }
     }
 
     #[inline]
     fn guard_autoproxy_static(autoproxy: &Autoproxy) {
-        if let Ok(actually_autoproxy) = Autoproxy::get_auto_proxy()
-            && &actually_autoproxy != autoproxy
-        {
-            debug!(
-                "Autoproxy settings do not match! Expected: {:?}, Actual: {:?}",
-                autoproxy, actually_autoproxy
-            );
-            debug!("Resetting Autoproxy to: {:?}", autoproxy);
-            if let Err(e) = autoproxy.set_auto_proxy() {
-                error!("Failed to set auto proxy: {:?}", e);
+        if let Ok(actually_autoproxy) = Autoproxy::get_auto_proxy() {
+            if &actually_autoproxy != autoproxy {
+                debug!(
+                    "Autoproxy settings do not match! Expected: {:?}, Actual: {:?}",
+                    autoproxy, actually_autoproxy
+                );
+                debug!("Resetting Autoproxy to: {:?}", autoproxy);
+                if let Err(e) = autoproxy.set_auto_proxy() {
+                    error!("Failed to set auto proxy: {:?}", e);
+                }
             }
         }
     }

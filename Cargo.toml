@@ -22,11 +22,11 @@ tokio = { version = "1", features = [
     "macros",
     "time",
 ], optional = true }
-napi = { version = "3", default-features = false, features = ["napi4"], optional = true }
-napi-derive = { version = "3", optional = true }
+napi = { version = "2", default-features = false, features = ["napi4"], optional = true }
+napi-derive = { version = "2", optional = true }
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
-url = "2.5"
+url = ">=2.4, <2.5"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 xdg = "3.0"
@@ -36,19 +36,19 @@ system-configuration = "0.7"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winreg = { version = "0.55", features = ["transactions"] }
-windows = { version = "0.62", features = [
+windows = { version = "0.58", features = [
     "Win32_Networking_WinInet",
     "Win32_NetworkManagement_Rras",
     "Win32_Foundation",
-    "Win32_System_Memory",
 ] }
 
 [dev-dependencies]
 serial_test = "3.1"
 criterion = "0.7"
+clap = { version = ">=4, <4.6" }
 
 [build-dependencies]
-napi-build = { version = "2", optional = true }
+napi-build = { version = "=2.0.1", optional = true }
 
 [[bench]]
 name = "macos_behavior"
