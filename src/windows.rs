@@ -11,7 +11,6 @@ use windows::{
             INTERNET_PER_CONN_PROXY_BYPASS, INTERNET_PER_CONN_PROXY_SERVER, InternetSetOptionW,
             PROXY_TYPE_AUTO_DETECT, PROXY_TYPE_AUTO_PROXY_URL, PROXY_TYPE_DIRECT, PROXY_TYPE_PROXY,
         },
-        System::Memory::{GetProcessHeap, HEAP_NONE, HEAP_ZERO_MEMORY, HeapAlloc, HeapFree},
     },
     core::{PCWSTR, PWSTR},
 };
@@ -307,51 +306,53 @@ fn get_ras_connections() -> Result<Vec<String>> {
         );
 
         log::debug!("get allocate buffer size result code: {result_code}");
-        if result_code == ERROR_BUFFER_TOO_SMALL {
-            // Allocate the memory needed for the array of RAS entry names.
-            let buffer_ptr = HeapAlloc(GetProcessHeap()?, HEAP_ZERO_MEMORY, buffer_size as usize);
-            if buffer_ptr.is_null() {
-                log::error!("HeapAlloc failed!");
-                return Ok(connections);
-            }
-            let lp_ras_entry_name = buffer_ptr as *mut RASENTRYNAMEW;
-            // The first RASENTRYNAME structure in the array must contain the structure size
-            (*lp_ras_entry_name).dwSize = std::mem::size_of::<RASENTRYNAMEW>() as u32;
 
-            // 获取所有 RAS 列表
-            let result_code = RasEnumEntriesW(
-                PCWSTR::null(),
-                PCWSTR::null(),
-                Some(lp_ras_entry_name),
-                &mut buffer_size,
-                &mut entry_count,
-            );
-            // 如果函数成功，则返回值 ERROR_SUCCESS, 但是该 API 返回 u32, 参照对比 ERROR_SUCCESS 后，该值应该为 0
-            log::debug!("get RAS entries result code: {result_code}");
-            if result_code == 0 && entry_count > 0 {
-                for i in 0..entry_count as isize {
-                    let entry = &*lp_ras_entry_name.offset(i);
-                    let name_arr = entry.szEntryName;
-                    // 去除宽字符多余的 0，以便更好的打印 RAS 名称
-                    let len = name_arr.iter().position(|&x| x == 0).unwrap_or(0);
-                    let name = String::from_utf16_lossy(&name_arr[..len]);
-                    connections.push(name);
-                }
-                log::debug!(
-                    "找到 {} 个拨号连接/VPN, {:?}",
-                    connections.len(),
-                    connections
-                );
+        if result_code != ERROR_BUFFER_TOO_SMALL {
+            if entry_count >= 1 {
+                log::error!("The operation failed to acquire the buffer size");
+            } else {
+                log::debug!("There were no RAS entry names found");
             }
-            // Deallocate memory for the connection buffer
-            HeapFree(GetProcessHeap()?, HEAP_NONE, Some(buffer_ptr))?;
             return Ok(connections);
         }
 
-        if entry_count >= 1 {
-            log::error!("The operation failed to acquire the buffer size");
-        } else {
-            log::debug!("There were no RAS entry names found");
+        let entry_capacity = buffer_size as usize / std::mem::size_of::<RASENTRYNAMEW>();
+        if entry_capacity == 0 {
+            return Ok(connections);
+        }
+
+        // 使用 Vec 管理缓冲区内存，避免手动堆分配
+        let mut entries: Vec<RASENTRYNAMEW> = Vec::with_capacity(entry_capacity);
+        for _ in 0..entry_capacity {
+            entries.push(std::mem::zeroed());
+        }
+        // The first RASENTRYNAME structure in the array must contain the structure size
+        entries[0].dwSize = std::mem::size_of::<RASENTRYNAMEW>() as u32;
+
+        // 获取所有 RAS 列表
+        let result_code = RasEnumEntriesW(
+            PCWSTR::null(),
+            PCWSTR::null(),
+            Some(entries.as_mut_ptr()),
+            &mut buffer_size,
+            &mut entry_count,
+        );
+        // 如果函数成功，则返回值 ERROR_SUCCESS, 但是该 API 返回 u32, 参照对比 ERROR_SUCCESS 后，该值应该为 0
+        log::debug!("get RAS entries result code: {result_code}");
+
+        if result_code == 0 && entry_count > 0 {
+            for entry in entries.iter().take(entry_count as usize) {
+                let name_arr = entry.szEntryName;
+                // 去除宽字符多余的 0，以便更好的打印 RAS 名称
+                let len = name_arr.iter().position(|&x| x == 0).unwrap_or(0);
+                let name = String::from_utf16_lossy(&name_arr[..len]);
+                connections.push(name);
+            }
+            log::debug!(
+                "找到 {} 个拨号连接/VPN, {:?}",
+                connections.len(),
+                connections
+            );
         }
     }
 
