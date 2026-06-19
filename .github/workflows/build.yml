@@ -84,6 +84,10 @@ jobs:
 
       - name: Build
         run: |
+          if [[ "${{ matrix.target }}" == *"-windows-msvc" ]]; then
+            export RUSTFLAGS="-C target-feature=+crt-static"
+          fi
+
           if [ -n "${{ matrix.features }}" ]; then
             pnpm build --target ${{ matrix.target }} --cargo-flags "${{ matrix.features }}"
           else
